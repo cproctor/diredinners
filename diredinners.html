@@ -1,0 +1,66 @@
+<head>
+  <title>Dire Diners</title>
+	<link href='http://fonts.googleapis.com/css?family=Russo+One|Nunito:700' rel='stylesheet' type='text/css'>
+</head>
+
+<body>
+  <div id="outer">
+		{{> week}}
+		{{> loose_cooks}}
+		{{> controls}}
+  </div>
+</body>
+
+<template name="week">
+  <div class="week">
+    {{#each days}}
+			{{> day}}
+    {{/each}}
+  </div>
+	<div class="day-names">
+		{{#each days}}
+			{{> day_name}}
+    {{/each}}
+	</div>
+</template>
+
+<template name="day">
+	<div class="day" id="{{name}}">
+		<div class="drop_target" data-position="1"></div>
+		<div class="drop_target" data-position="2"></div>
+		<div class="drop_target" data-position="3"></div>
+		<div class="drop_target" data-position="4"></div>
+		<div class="drop_target" data-position="5"></div>
+	</div>
+	{{make_droppable}}
+</template>
+
+<template name="day_name">
+	<div class="day-name {{letter}}">
+		{{letter}}
+	</div>
+</template>
+
+<template name="loose_cooks">
+	<div id="loose_cooks">
+		{{#each cooks}}
+			{{> cook}}
+		{{/each}}
+	</div>
+</template>
+
+<template name="cook">
+	<div class="cook">
+		<span class="name" data-cook-id="{{_id}}">{{name}}</span>
+	</div>
+	{{make_draggable}}
+</template>
+
+<template name="controls">
+	<div id="controls">
+		<input type="text" id="new_cook_name">
+		<button id="add_cook">
+			Add a cook
+		</button>
+	</div>
+</template>

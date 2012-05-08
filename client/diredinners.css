@@ -1,0 +1,87 @@
+/* CSS declarations go here */
+
+body {
+  background-color:#333;
+  color:white;
+  font-size:40px;
+  font-family: 'Nunito', sans-serif;
+}
+#outer {
+  width:800px;
+  margin: 0 auto;
+}
+.week {
+  background:url('/background.jpg');
+  width:800px;
+  height:600px;
+  clear:both;
+  -moz-border-radius:12px;
+  border-radius:12px;
+  margin-top:20px;
+}
+
+.day {
+  padding:0;
+  float:left;
+  width:25%;
+  height:100%;
+  border:0;
+  opacity:0.9;
+  background-color:black;
+}
+
+.day:first-child {
+  -moz-border-radius:12px 0 0 12px;
+  border-radius:12px 0 0 12px;
+}
+
+.day:last-child {
+  -moz-border-radius:0 12px 12px 0;
+  border-radius:0 12px 12px 0;
+}
+
+.day-names {
+  font-family: 'Russo One', sans-serif;
+  font-size:180px;
+  color:#333;
+  width:800px;
+  position:absolute;
+  top:455px;
+}
+
+.day-name {
+  margin:0;
+  width:200px;
+  float:left;
+  text-align:center;
+}
+
+.M {
+  position:relative;
+  left:18px;
+}
+
+.cook {
+  width:150px;
+  height:60px;
+  text-align:center;
+  /*background-color:#bff;*/
+  position:absolute;
+}
+
+.drop_target {
+  width:150px;
+  height:60px;
+  /*background-color:white;*/
+  margin:35px 25px;
+}
+
+#loose_cooks {
+  float:left;
+  clear:both;
+}
+
+#controls {
+  float:left;
+  clear:both;
+}
