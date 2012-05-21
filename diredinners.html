@@ -6,7 +6,10 @@
 <body>
   <div id="outer">
 		{{> week}}
-		{{> loose_cooks}}
+		<div id="loose_cooks">
+			{{> loose_cooks}}
+			{{> bound_cooks}}
+		</div>
 		{{> controls}}
   </div>
 </body>
@@ -42,18 +45,30 @@
 </template>
 
 <template name="loose_cooks">
-	<div id="loose_cooks">
-		{{#each cooks}}
-			{{> cook}}
-		{{/each}}
-	</div>
+	{{#each loose_cooks}}
+		{{> loose_cook}}
+	{{/each}}
 </template>
 
-<template name="cook">
-	<div class="cook">
+<template name="loose_cook">
+	<div class="loose_cook">
 		<span class="name" data-cook-id="{{_id}}">{{name}}</span>
 	</div>
 	{{make_draggable}}
+</template>
+
+<template name="bound_cooks">
+		{{#each bound_cooks}}
+			{{> bound_cook}}
+		{{/each}}
+</template>
+
+<template name="bound_cook">
+	<div class="bound_cook">
+		<span class="name" data-cook-id="{{_id}}">{{name}}</span>
+	</div>
+	{{make_draggable}}
+	{{set_position}}
 </template>
 
 <template name="controls">

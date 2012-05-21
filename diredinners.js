@@ -4,26 +4,40 @@
 //should not.
 //positioning help: http://www.west-wind.com/weblog/posts/2008/Oct/21/Making-Element-Position-Absolute-with-jQuery
 
+
 // Both the server and the client create these collections.
 // {name:"Monday", letter:"M", sequence:1}
 Days = new Meteor.Collection("days");
 // {name:"Chris", day:"Monday", position:1}
-Cooks = new Meteor.Collection("players");
+Cooks = new Meteor.Collection("cooks");
 
+
+//
+// CLIENT CODE
+//
 
 if (Meteor.is_client) {
   
-  updateBackground = function(){
+  var update_background = function(){
+    console.log("Updating background.");
+    console.log($('.day'));
     $('.day').each(function(){
-      var cooksToday = Cooks.find({day:$(this).attr('id')}).count();
-      var opacity = 0.9 - cooksToday * 0.2;
+      var cooks_today = Cooks.find({day:$(this).attr('id')}).count();
+      var opacity = 0.9 - cooks_today * 0.2;
       $(this).animate({opacity:opacity}, 400);
     });
   }
   
-  // Receive updates to cook status and update day backgrounds accordingly.
-  Meteor.subscribe('cooks');
+  Meteor.startup(function(){
+    setTimeout(function(){
+      update_background();
+      $('.week').css("opacity", 1);
+    }, 500);
+  });
   
+  // Receive updates to cook status and update day backgrounds accordingly.
+  Meteor.subscribe('loose_cooks');
+  Meteor.subscribe('bound_cooks');
   Meteor.subscribe('days');
   
   var areTheSame = function(cook1, cook2) {
@@ -36,6 +50,8 @@ if (Meteor.is_client) {
   Template.week.days = function() {
     return Days.find({});
   }
+  
+  Template.week.update_background = update_background;
   
   Template.day.make_droppable = function(){
     Meteor.defer(function(){
@@ -56,7 +72,7 @@ if (Meteor.is_client) {
           var position = $(this).attr("data-position");
           var thisCook = Cooks.findOne({_id:ui.draggable.children().attr("data-cook-id")});
           Cooks.update(thisCook, {$set:{day:day, position:position}});
-          updateBackground();
+          update_background();
         },
         
         //If the current cook leaves, update his or her model to reflect the change. 
@@ -68,28 +84,61 @@ if (Meteor.is_client) {
           var thisCook = Cooks.findOne({id:ui.draggable.children().attr("data-cook-id")});
           if (areTheSame(thisCook, currentCook)) {
             Cooks.update(thisCook, {$set:{day:null, position:null}});
-            updateBackground();
+            update_background();
           }
         }
       });
     });
   } 
   
-  Template.loose_cooks.cooks = function() {
-    return Cooks.find({});
+  Template.loose_cooks.loose_cooks = function() {
+    return Cooks.find({top:null});
   }
-  
-  Template.cook.make_draggable = function() {
+  Template.loose_cook.make_draggable = function() {
     Meteor.defer(function(){
-      $('.cook').draggable({
-        revert:'invalid', 
+      $(".loose_cook").draggable({
+        //revert:'invalid', 
         snap:'.drop_target',
         snapMode:'inner',
-        snapTolerance:80
+        snapTolerance:80,
+        stop: function(event, ui) {
+          console.log(this);
+          thisCook = Cooks.findOne({_id:$(this).children().attr("data-cook-id")});
+          Cooks.update(thisCook, {$set:{top:$(this).css("top"), left:$(this).css("left")}});
+          console.log("Updating cook:");
+          console.log(thisCook);
+          
+        }
+      });
+    });
+  }
+  Template.bound_cooks.bound_cooks = function() {
+    return Cooks.find({top:{$ne:null}});
+  }
+  Template.bound_cook.make_draggable = function() {
+    Meteor.defer(function(){
+      $(".bound_cook").draggable({
+        //revert:'invalid', 
+        snap:'.drop_target',
+        snapMode:'inner',
+        snapTolerance:80,
+        stop: function(event, ui) {
+          console.log(this);
+          thisCook = Cooks.findOne({_id:$(this).children().attr("data-cook-id")});
+          Cooks.update(thisCook, {$set:{top:$(this).css("top"), left:$(this).css("left")}});
+          console.log("Updating cook:");
+          console.log(thisCook);
+          console.log("Setting position");
+          $cook = $('[data-cook-id|=' + thisCook._id + ']');
+          $cook.parent().css('top', "" + thisCook.top + "px");
+          $cook.parent().css('left', "" + thisCook.left + "px");
+        }
       });
     });
   }
   
+// Controls template
+// -----------------
   Template.controls.events = {
     "click #add_cook" : function() {
       Cooks.insert({ name:$("#new_cook_name").val() });
@@ -98,10 +147,18 @@ if (Meteor.is_client) {
   }
 }
 
+//
+// SERVER CODE
+// 
+
 if (Meteor.is_server) {
-  Meteor.publish('cooks', function() {
-    return Cooks.find({});
+  Meteor.publish('loose_cooks', function() {
+    return Cooks.find({top:null});
   });
+  
+  Meteor.publish('bound_cooks', function() {
+    return Cooks.find({top:{$ne:null}})
+  })
   
   Meteor.publish('days', function() {
     return Days.find({});
