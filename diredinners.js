@@ -20,18 +20,18 @@ if (Meteor.is_client) {
   
   var update_background = function(){
     console.log("Updating background.");
-    console.log($('.day'));
-    $('.day').each(function(){
-      var cooks_today = Cooks.find({day:$(this).attr('id')}).count();
+    $('.day-mask').each(function(){
+      var cooks_today = Cooks.find({day:$(this).attr('data-day')}).count();
       var opacity = 0.9 - cooks_today * 0.2;
       $(this).animate({opacity:opacity}, 400);
     });
   }
   
   Meteor.startup(function(){
+    //I can't find any hook for when the days have loaded...
     setTimeout(function(){
       update_background();
-      $('.week').css("opacity", 1);
+      $('.week-mask').css("opacity", 1);
     }, 500);
   });
   
@@ -44,14 +44,12 @@ if (Meteor.is_client) {
     if (!(cook1 && cook2))
       return false;
     else
-      return (cook1._id === cook2._id);
+      return (cook1._id == cook2._id);
   }
   
   Template.week.days = function() {
     return Days.find({});
   }
-  
-  Template.week.update_background = update_background;
   
   Template.day.make_droppable = function(){
     Meteor.defer(function(){
@@ -59,7 +57,7 @@ if (Meteor.is_client) {
         
         //Only accept cooks if there isn't a cook or if it's the cook in this position.
         accept:function(dropElem) {
-          var day = $(this).parent().attr("id");
+          var day = $(this).parent().attr("data-day");
           var position = $(this).attr("data-position");
           var currentCook = Cooks.findOne({day:day, position:position});
           var thisCook = Cooks.findOne({id:$(this).attr("data-cook-id")});
@@ -68,7 +66,7 @@ if (Meteor.is_client) {
         
         //Update the dropped cook's model to reflect his/her place here. 
         drop:function(event, ui) {
-          var day = $(this).parent().attr("id");
+          var day = $(this).parent().attr("data-day");
           var position = $(this).attr("data-position");
           var thisCook = Cooks.findOne({_id:ui.draggable.children().attr("data-cook-id")});
           Cooks.update(thisCook, {$set:{day:day, position:position}});
@@ -77,9 +75,8 @@ if (Meteor.is_client) {
         
         //If the current cook leaves, update his or her model to reflect the change. 
         out:function(event, ui) {
-          var day = $(this).parent().attr("id");
+          var day = $(this).parent().attr("data-day");
           var position = $(this).attr("data-position");
-          console.log("In "+day+" position "+position);
           var currentCook = Cooks.findOne({day:day, position:position});
           var thisCook = Cooks.findOne({id:ui.draggable.children().attr("data-cook-id")});
           if (areTheSame(thisCook, currentCook)) {
@@ -91,47 +88,68 @@ if (Meteor.is_client) {
     });
   } 
   
-  Template.loose_cooks.loose_cooks = function() {
-    return Cooks.find({top:null});
+  Template.day.bound_cooks = function(day, position) {
+    return Cooks.find({day:day, position:position});
   }
-  Template.loose_cook.make_draggable = function() {
+  
+  Template.loose_cooks.loose_cooks = function() {
+    return Cooks.find({day:null});
+  }
+  
+  Template.loose_cooks.make_droppable = function() {
     Meteor.defer(function(){
-      $(".loose_cook").draggable({
-        //revert:'invalid', 
-        snap:'.drop_target',
-        snapMode:'inner',
-        snapTolerance:80,
-        stop: function(event, ui) {
-          console.log(this);
-          thisCook = Cooks.findOne({_id:$(this).children().attr("data-cook-id")});
-          Cooks.update(thisCook, {$set:{top:$(this).css("top"), left:$(this).css("left")}});
-          console.log("Updating cook:");
+      $("#loose_cooks").droppable({
+        accept:function(){return true;},
+        drop:function(event, ui) {
+          console.log("Dropped over Loose Cooks");
+          var thisCook = Cooks.findOne({_id:ui.draggable.children().attr("data-cook-id")});
           console.log(thisCook);
-          
+          Cooks.update(thisCook._id, {day:null, position:null, name:thisCook.name});
+          update_background();
         }
       });
     });
   }
-  Template.bound_cooks.bound_cooks = function() {
-    return Cooks.find({top:{$ne:null}});
+  
+  Template.loose_cook.make_draggable = function() {
+    Meteor.defer(function(){
+      $(".loose_cook").draggable({
+        revert:'invalid', 
+        snap:'.drop_target',
+        snapMode:'inner',
+        snapTolerance:40
+      });
+    });
   }
   Template.bound_cook.make_draggable = function() {
     Meteor.defer(function(){
       $(".bound_cook").draggable({
-        //revert:'invalid', 
+        revert:'invalid', 
         snap:'.drop_target',
         snapMode:'inner',
-        snapTolerance:80,
-        stop: function(event, ui) {
-          console.log(this);
-          thisCook = Cooks.findOne({_id:$(this).children().attr("data-cook-id")});
-          Cooks.update(thisCook, {$set:{top:$(this).css("top"), left:$(this).css("left")}});
-          console.log("Updating cook:");
-          console.log(thisCook);
-          console.log("Setting position");
-          $cook = $('[data-cook-id|=' + thisCook._id + ']');
-          $cook.parent().css('top', "" + thisCook.top + "px");
-          $cook.parent().css('left', "" + thisCook.left + "px");
+        snapTolerance:40
+      });
+    });
+  }
+  
+  Template.bound_cook.update_background = update_background;
+  
+  Template.controls.enable_controls = function() {
+    Meteor.defer(function(){
+      console.log("Enabling controls.");
+      console.log( $('#remove_cook'));
+      $('#remove_cook').droppable({
+        accept:function(){return true;},
+        drop:function(event, ui) {
+          var thisCook = Cooks.findOne({_id:ui.draggable.children().attr("data-cook-id")});
+          Cooks.remove(thisCook);
+          $(this).animate({"background-color":"#555"}, 200);
+        },
+        over:function() {
+          $(this).animate({"background-color":"#800"}, 200);
+        },
+        out:function() {
+          $(this).animate({"background-color":"#555"}, 200);
         }
       });
     });
@@ -140,9 +158,30 @@ if (Meteor.is_client) {
 // Controls template
 // -----------------
   Template.controls.events = {
-    "click #add_cook" : function() {
-      Cooks.insert({ name:$("#new_cook_name").val() });
-      $("#new_cook_name").val("");
+    "mouseover #add_cook" : function() {
+      //Go into editing mode
+      $("#add_cook").animate({"background-color":"#080"}, 200);
+      $("#plus").hide();
+      $("#new_cook_name").show().focus();
+    },
+    "keyup #new_cook_name" : function(evt) {
+      //Enter
+      if (evt.which === 13 && $("#new_cook_name").val()) {
+        Cooks.insert({ name:$("#new_cook_name").val() });
+        $("#new_cook_name").val("");
+        $("#plus").show();
+        $("#new_cook_name").hide();
+        $("#add_cook").animate({"background-color":"#555"}, 200);
+      }
+    },
+    "keydown #new_cook_name" : function(evt) {
+      //Cancel
+      if (evt.which === 27) {
+        $("#new_cook_name").val("");
+        $("#plus").show();
+        $("#new_cook_name").hide();
+        $("#add_cook").animate({"background-color":"#555"}, 200);
+      }
     }
   }
 }

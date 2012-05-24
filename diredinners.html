@@ -4,38 +4,75 @@
 </head>
 
 <body>
+	{{> controls}}
   <div id="outer">
 		{{> week}}
-		<div id="loose_cooks">
-			{{> loose_cooks}}
-			{{> bound_cooks}}
-		</div>
-		{{> controls}}
   </div>
+	<div id="loose_cooks">
+		{{> loose_cooks}}
+	</div>
 </body>
 
 <template name="week">
-  <div class="week">
-    {{#each days}}
-			{{> day}}
-    {{/each}}
-  </div>
+	<div class="week-mask">
+		{{#each days}}
+			{{> day_mask}}
+		{{/each}}
+	</div>
 	<div class="day-names">
 		{{#each days}}
 			{{> day_name}}
     {{/each}}
 	</div>
+	<div class="week">
+    {{#each days}}
+			{{> day}}
+    {{/each}}
+  </div>
+</template>
+
+<template name="day_mask">
+	<div class="day-mask" data-day="{{name}}">
+	</div>
 </template>
 
 <template name="day">
-	<div class="day" id="{{name}}">
-		<div class="drop_target" data-position="1"></div>
-		<div class="drop_target" data-position="2"></div>
-		<div class="drop_target" data-position="3"></div>
-		<div class="drop_target" data-position="4"></div>
-		<div class="drop_target" data-position="5"></div>
+	<div class="day" data-day="{{name}}">
+		<div class="drop_target" data-position="1">
+			{{#each bound_cooks name 1}}
+				{{> bound_cook}}
+			{{/each}}
+		</div>
+		<div class="drop_target" data-position="2">
+			{{#each bound_cooks name 2}}
+				{{> bound_cook}}
+			{{/each}}
+		</div>
+		<div class="drop_target" data-position="3">
+			{{#each bound_cooks name 3}}
+				{{> bound_cook}}
+			{{/each}}
+		</div>
+		<div class="drop_target" data-position="4">
+			{{#each bound_cooks name 4}}
+				{{> bound_cook}}
+			{{/each}}
+		</div>
+		<div class="drop_target" data-position="5">
+			{{#each bound_cooks name 5}}
+				{{> bound_cook}}
+			{{/each}}
+		</div>
 	</div>
 	{{make_droppable}}
+</template>
+
+<template name="bound_cook">
+	<div class="bound_cook">
+		<span class="name" data-cook-id="{{_id}}">{{name}}</span>
+	</div>
+	{{make_draggable}}
+	{{update_background}}
 </template>
 
 <template name="day_name">
@@ -48,6 +85,7 @@
 	{{#each loose_cooks}}
 		{{> loose_cook}}
 	{{/each}}
+	{{make_droppable}}
 </template>
 
 <template name="loose_cook">
@@ -57,25 +95,13 @@
 	{{make_draggable}}
 </template>
 
-<template name="bound_cooks">
-		{{#each bound_cooks}}
-			{{> bound_cook}}
-		{{/each}}
-</template>
-
-<template name="bound_cook">
-	<div class="bound_cook">
-		<span class="name" data-cook-id="{{_id}}">{{name}}</span>
-	</div>
-	{{make_draggable}}
-	{{set_position}}
-</template>
-
 <template name="controls">
 	<div id="controls">
-		<input type="text" id="new_cook_name">
-		<button id="add_cook">
-			Add a cook
-		</button>
+		<div class="control" id="add_cook">
+			<span id="plus">+</span>
+			<input type="text" id="new_cook_name" maxlength="7">
+		</div>
+		<div class="control" id="remove_cook">-</div>
 	</div>
+	{{enable_controls}}
 </template>

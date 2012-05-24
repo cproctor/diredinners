@@ -5,23 +5,55 @@ body {
   color:white;
   font-size:40px;
   font-family: 'Nunito', sans-serif;
+  height:640px;
+  overflow:hidden;
 }
 #outer {
+  height:640px;
   width:800px;
   margin: 0 auto;
 }
 .week {
+  width:800px;
+  height:600px;
+  clear:both;
+  -moz-border-radius:12px;
+  border-radius:12px;
+  position:relative;
+  top:-600px;
+  left:0;
+}
+
+.day {
+  padding:0;
+  float:left;
+  width:25%;
+  height:100%;
+  border:0;
+}
+
+.day:first-child {
+  -moz-border-radius:12px 0 0 12px;
+  border-radius:12px 0 0 12px;
+}
+
+.day:last-child {
+  -moz-border-radius:0 12px 12px 0;
+  border-radius:0 12px 12px 0;
+}
+
+.week-mask {
   background:url('/background.jpg');
+  opacity:0;
   width:800px;
   height:600px;
   clear:both;
   -moz-border-radius:12px;
   border-radius:12px;
   margin-top:20px;
-  opacity:0;
 }
 
-.day {
+.day-mask {
   padding:0;
   float:left;
   width:25%;
@@ -31,12 +63,12 @@ body {
   background-color:black;
 }
 
-.day:first-child {
+.day-mask:first-child {
   -moz-border-radius:12px 0 0 12px;
   border-radius:12px 0 0 12px;
 }
 
-.day:last-child {
+.day-mask:last-child {
   -moz-border-radius:0 12px 12px 0;
   border-radius:0 12px 12px 0;
 }
@@ -79,15 +111,39 @@ body {
 
 #loose_cooks {
   position:absolute;
-  top:10px;
-  left:10px;
+  text-align:center;
+  top:160px;
+  left:20px;
+  width:120px;
+  min-height:200px;
 }
 
 .bound_cook {
   position:relative;
+  text-align:center;
 }
 
 #controls {
-  float:left;
-  clear:both;
+  width:120px;
+  position:absolute;
+  top:20px;
+  left:20px;
+}
+
+.control {
+  text-align:center;
+  background-color:#555;
+  padding:2px;
+  -moz-border-radius:12px;
+  border-radius:12px;
+  margin:5px 0;
+}
+
+.control input {
+  display:none;
+  background-color:"green";
+  width:80%;
+  font-size:20px;
+  position:relative;
+  top:-6px;
 }
